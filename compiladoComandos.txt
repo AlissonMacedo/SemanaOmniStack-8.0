@@ -1,0 +1,39 @@
+//[iniciar projeto node]
+//yarn init -y
+
+//[instalar express]
+
+//yarn add express 
+
+//Descricao {
+//Servidor Web;
+//Micro FrameWork para node,
+//para lidar com rotas, respostas
+//e requisições.
+//} 
+
+//Criar [Pasta e Arquivos de configuração]
+
+//src/server.js
+
+//Configurar server.js
+
+const express = require('express');
+const routes = require('./routes')
+
+const server = express();
+
+server.use(routes);
+
+server.listen(3333);
+
+//[Criar e configurar o routes.js]
+const express = require('express');
+
+const routes = express.Router();
+
+server.get('/', (req, res) => {
+  return res.json({ messege: `Olá ${req.query.name}` });
+});
+
+module.exports = routes;
