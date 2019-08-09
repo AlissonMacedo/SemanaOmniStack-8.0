@@ -1,43 +1,50 @@
 const axios = require('axios');
 const Dev = require('../models/Dev');
+const { apiUrl } = require('../utils/utils');
 
 module.exports = {
-  async index(req, res) {
-    const { user } = req.headers;
+    
+    async index(req, res) {
 
-    const loggedDev = await Dev.findById(user);
+        const { user } = req.headers;
 
-    const users = await Dev.find({
-      $and: [ //Filtro AND
-        { _id: { $ne: user } }, //Tira o próprio id do resultado
-        { _id: { $nin: loggedDev.likes } }, //Tira id que estao no likes
-        { _id: { $nin: loggedDev.dislikes } }, //Tira id que estao nos dislikes
-      ],
-    })
+        const loggedDev = await Dev.findById(user);
 
-    return res.json(users);
-  },
+        const users = await Dev.find({
+            $and: [
+                { _id: { $ne: user } },
+                { _id: { $nin: loggedDev.likes } },
+                { _id: { $nin: loggedDev.dislikes } },
+            ]
+        });
 
-  async store(req, res) {
-    const { username } = req.body;
+        return res.json(users);
 
-    const userExists = await Dev.findOne({ user: username });
+    },
 
-    if (userExists){
-      return res.json({ message: 'Este usuário ja foi adicionado' });
+    async store(req, res) {
+        const { username } = req.body;
+
+        const userExists = await Dev.findOne({ user: username });
+
+        if (userExists) {
+            
+            return res.json(userExists);
+        
+        } else {
+
+            const response = await axios.get(`${apiUrl}/${username}`);
+            const { name, bio, avatar_url: avatar } = response.data;
+            
+            const dev = await Dev.create({ 
+                name, 
+                user: username,
+                bio,
+                avatar
+            });
+
+            return res.json(dev);
+        }
     }
 
-    const response = await axios.get(`https://api.github.com/users/${username}`);
-
-    const { name, bio, avatar_url: avatar } = response.data
-
-    const dev = await Dev.create({
-      name,
-      user: username,
-      bio,
-      avatar
-    })
-
-    return res.json(dev);
-  }
-};
+}
